@@ -7,40 +7,34 @@
 # Copyright (C) 2018  Seeed Technology Co.,Ltd.
 #
 '''
-This is the grove.gpio.GPIO implemented by RPi.GPIO.
+This is the grove.gpio.GPIO implemented by lgpio.
 '''
-import RPi.GPIO
+import lgpio
 
-__all__ = ['GPIO']
+class GPIO:
+    OUT = 1
+    IN = 0
 
-RPi.GPIO.setwarnings(False)
-RPi.GPIO.setmode(RPi.GPIO.BCM)
-
-
-class GPIO(object):
-    OUT = RPi.GPIO.OUT
-    IN = RPi.GPIO.IN
-    
     def __init__(self, pin, direction=None):
         self.pin = pin
+        self.chip = lgpio.gpiochip_open(4)  # Raspberry Pi 5 uses gpiochip4
         if direction is not None:
             self.dir(direction)
-
         self._event_handle = None
 
     def dir(self, direction):
-        RPi.GPIO.setup(self.pin, direction)
+        lgpio.gpio_claim_output(self.chip, self.pin) if direction == self.OUT else lgpio.gpio_claim_input(self.chip, self.pin)
 
     def write(self, output):
-        RPi.GPIO.output(self.pin, output)
+        lgpio.gpio_write(self.chip, self.pin, output)
 
     def read(self):
-        return RPi.GPIO.input(self.pin)
+        return lgpio.gpio_read(self.chip, self.pin)
 
-    def _on_event(self, pin):
+    def _on_event(self, chip, event, timestamp):
         value = self.read()
         if self._event_handle:
-            self._event_handle(pin, value)
+            self._event_handle(self.pin, value)
 
     @property
     def on_event(self):
@@ -52,6 +46,10 @@ class GPIO(object):
             return
 
         if self._event_handle is None:
-            RPi.GPIO.add_event_detect(self.pin, RPi.GPIO.BOTH, self._on_event)
+            lgpio.gpio_claim_alert(self.chip, self.pin, lgpio.BOTH_EDGES)
+            lgpio.gpio_register_callback(self.chip, self.pin, self._on_event)
 
         self._event_handle = handle
+
+    def close(self):
+        lgpio.gpiochip_close(self.chip)

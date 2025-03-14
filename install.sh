@@ -149,10 +149,14 @@ if [ $(get_i2c) -ne 0 ]; then
 	exit 1
 fi
 
-## install library rpi.gpio
-
+## install library to control Raspberry Pi GPIOs (lgpio for Raspberry Pi 5, RPi.GPIO for other Raspberry Pis)
 if [ "X$platform" == "Xrpi" ]; then
-	(( r == 0 )) && { pip_install RPi.GPIO 'pip3 install RPi.GPIO'; r=$?; }
+	# check if substring "Raspberry Pi 5" is in file /proc/device-tree/model
+	if grep -q "Raspberry Pi 5" /proc/device-tree/model; then
+		(( r == 0 )) && { pip_install lgpio 'pip3 install lgpio'; r=$?; }
+	else
+		(( r == 0 )) && { pip_install RPi.GPIO 'pip3 install RPi.GPIO'; r=$?; }
+	fi
 fi
 
 ## install library rpi-ws281x
