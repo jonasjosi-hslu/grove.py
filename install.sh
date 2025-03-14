@@ -14,7 +14,9 @@ _DEBUG=0
 _package_name=grove.py
 _seeed_source_list=/etc/apt/sources.list.d/seeed.list
 _seeed_apt_key="BB8F 40F3"
-_repo_package_url=https://github.com/Seeed-Studio/$_package_name/archive/master.zip
+# _repo_package_url=https://github.com/Seeed-Studio/$_package_name/archive/master.zip
+_repo_package_url=https://github.com/jonasjosi-hslu/$_package_name/archive/master.zip
+
 
 BLACKLIST=/etc/modprobe.d/raspi-blacklist.conf
 CONFIG=/boot/config.txt
